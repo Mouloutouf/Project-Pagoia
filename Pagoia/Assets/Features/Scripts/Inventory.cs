@@ -30,12 +30,11 @@ public class Inventory : MonoBehaviour
     [HideInInspector]
     public Entity pickaxe;
 
-    [HideInInspector]
-    public Dictionary<ElementType, int> maximums = new Dictionary<ElementType, int>();
+    public Dictionary<EntityType, int> maximums = new Dictionary<EntityType, int>();
 
-    private Dictionary<ElementType, ElementCount> storage = new Dictionary<ElementType, ElementCount>();
+    private Dictionary<EntityType, ElementCount> storage = new Dictionary<EntityType, ElementCount>();
 
-    public void AddElement(ElementType _element)
+    public void AddElement(EntityType _element)
     {
         if (storage.ContainsKey(_element))
         {
@@ -46,7 +45,7 @@ public class Inventory : MonoBehaviour
             storage.Add(_element, new ElementCount(maximums[_element], 1));
         }
     }
-    public void RemoveElement(ElementType _element)
+    public void RemoveElement(EntityType _element)
     {
         if (storage.ContainsKey(_element))
         {
@@ -54,7 +53,7 @@ public class Inventory : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"There are no elements of type {_element.name} in the inventory");
+            Debug.LogError($"There are no elements of type {_element} in the inventory");
         }
     }
 }
