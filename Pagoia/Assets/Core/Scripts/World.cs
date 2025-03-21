@@ -12,24 +12,24 @@ public class World : MonoBehaviour
 
         foreach (var s in states)
         {
-            Debug.LogError($"State {s.stateType} with entity {s.target.entityType}");
+            Debug.LogError($"State {s.statusType} with entity {s.targetEntity.entityType}");
         }
     }
 
     private List<State> states = new List<State>();
 
-    public Entity[] FindEntities(StateType _stateType, EntityType _entityType)
+    public Entity[] FindEntities(StatusType _statusType, EntityType _entityType)
     {
         var entitySearchQuery =
-            from state in states where (state.stateType == _stateType) && (state.target.entityType == _entityType) select state.target;
+            from state in states where (state.statusType == _statusType) && (state.targetEntity.entityType == _entityType) select state.targetEntity;
 
         return entitySearchQuery.ToArray();
     }
-    public Entity[] FindEntities(EntityType _entityType, params (StateType stateType, bool shouldHaveState)[] _statesToConfirm)
+    public Entity[] FindEntities(EntityType _entityType, params (StatusType stateType, bool shouldHaveState)[] _statesToConfirm)
     {
         // Start by Querying all the states that are related to that specific entity type
         var entitiesStatesQuery =
-            from state in states where state.target.entityType == _entityType select state;
+            from state in states where state.targetEntity.entityType == _entityType select state;
 
         // This is costly and quite heavy, but it's the only way to achieve what I want
         List<Entity> validEntities = new List<Entity>();
@@ -39,22 +39,22 @@ public class World : MonoBehaviour
             foreach (var stateToConfirm in _statesToConfirm)
             {
                 var condition = stateToConfirm.shouldHaveState
-                    ? entityState.stateType == stateToConfirm.stateType
-                    : entityState.stateType != stateToConfirm.stateType;
+                    ? entityState.statusType == stateToConfirm.stateType
+                    : entityState.statusType != stateToConfirm.stateType;
                 
                 if (condition)
                 {
-                    if (invalidEntities.Contains(entityState.target))
+                    if (invalidEntities.Contains(entityState.targetEntity))
                         continue;
-                    if (!validEntities.Contains(entityState.target))
-                        validEntities.Add(entityState.target);
+                    if (!validEntities.Contains(entityState.targetEntity))
+                        validEntities.Add(entityState.targetEntity);
                 }
                 else
                 {
-                    if (!invalidEntities.Contains(entityState.target))
-                        invalidEntities.Add(entityState.target);
-                    if (validEntities.Contains(entityState.target))
-                        validEntities.Remove(entityState.target);
+                    if (!invalidEntities.Contains(entityState.targetEntity))
+                        invalidEntities.Add(entityState.targetEntity);
+                    if (validEntities.Contains(entityState.targetEntity))
+                        validEntities.Remove(entityState.targetEntity);
                 }
             }
         }
@@ -67,12 +67,12 @@ public class World : MonoBehaviour
             if (stateToConfirm.shouldHaveState)
             {
                 entitiesStatesQuery = 
-                    from state in entitiesStatesQuery where state.stateType == stateToConfirm.stateType select state;
+                    from state in entitiesStatesQuery where state.statusType == stateToConfirm.stateType select state;
             }
             else
             {
                 entitiesStatesQuery = 
-                    from state in entitiesStatesQuery where state.stateType != stateToConfirm.stateType select state;
+                    from state in entitiesStatesQuery where state.statusType != stateToConfirm.stateType select state;
             }
             
             // stateQuery = 
@@ -84,15 +84,15 @@ public class World : MonoBehaviour
 
         // End by querying the entity for each of the queried states
         var entitySearchQuery =
-            from state in entitiesStatesQuery select state.target;
+            from state in entitiesStatesQuery select state.targetEntity;
 
         return entitySearchQuery.ToArray();
     }
 
-    public bool ContainsState(StateType _stateType, EntityType _entityType)
+    public bool ContainsState(StatusType _statusType, EntityType _entityType)
     {
         var searchedStateQuery =
-            from state in states where (state.stateType == _stateType) && (state.target.entityType == _entityType) select state;
+            from state in states where (state.statusType == _statusType) && (state.targetEntity.entityType == _entityType) select state;
         //foreach (var s in states)
         //{
         //    Debug.LogError($"State {s.stateType} with entity {s.target.entityType}");
@@ -101,79 +101,45 @@ public class World : MonoBehaviour
 
         return searchedStateQuery.Any();
     }
-    public bool ContainsState(StateType _stateType, Entity _target)
+    public bool ContainsState(StatusType _statusType, Entity _target, Entity _other = null)
     {
-        var searchedStateQuery =
-            from state in states where (state.stateType == _stateType) && (state.target == _target) select state;
+        var stateQuery =
+            from state in states where (state.statusType == _statusType) && (state.targetEntity == _target) && (state.otherEntity == _other)
+            select state;
 
-        return searchedStateQuery.Any();
-    }
-    public bool ContainsState(StateType _stateType, Entity _target, Entity _actor)
-    {
-        var actorStateQuery =
-            from state in states where (state.GetType() == typeof(ActorState)) select (ActorState)state;
-
-        var searchedActorStateQuery =
-            from actorState in actorStateQuery where (actorState.stateType == _stateType) && (actorState.target == _target) && (actorState.actor == _actor)
-            select actorState;
-
-        return searchedActorStateQuery.Any();
+        return stateQuery.Any();
     }
 
-    public State GetState(StateType _stateType, Entity _target)
+    public State GetState(StatusType _statusType, Entity _target, Entity _other = null)
     {
-        var searchedStateQuery =
-            from state in states where (state.stateType == _stateType) && (state.target == _target) select state;
+        var stateQuery =
+            from state in states where (state.statusType == _statusType) && (state.targetEntity == _target) && (state.otherEntity == _other)
+            select state;
 
-        var searchedStates = searchedStateQuery.ToList();
-        if (searchedStates.Any())
-            return searchedStates.First();
-        Debug.LogError($"There is no state identified as State {_stateType} with Target {_target.entityType}");
-        return null;
-    }
-    public State GetState(StateType _stateType, Entity _target, Entity _actor)
-    {
-        var actorStateQuery =
-            from state in states where (state.GetType() == typeof(ActorState)) select (ActorState)state;
-
-        var searchedActorStateQuery =
-            from actorState in actorStateQuery where (actorState.stateType == _stateType) && (actorState.target == _target) && (actorState.actor == _actor)
-            select actorState;
-
-        var searchedActorStates = searchedActorStateQuery.ToList();
-        if (searchedActorStates.Any())
-            return searchedActorStates.First();
-        Debug.LogError($"There is no state identified as Actor {_actor.entityType} performing State {_stateType} to Target {_target.entityType}");
+        var stateList = stateQuery.ToList();
+        if (stateList.Any())
+            return stateList.First();
+        
+        Debug.LogError($"No state found where {_target.entityType} has status {_statusType} towards {(_other != null ? _other.entityType : null)}");
         return null;
     }
 
-    public void AddState(StateType _stateType, Entity _target)
+    public void AddState(StatusType _statusType, Entity _target, Entity _other = null)
     {
-        if (ContainsState(_stateType, _target)) return;
-        states.Add(new State { stateType = _stateType, target = _target });
-        Debug.Log($"State Added Successfully ! State {_stateType} with Target {_target}");
-    }
-    public void AddState(StateType _stateType, Entity _target, Entity _actor)
-    {
-        if (ContainsState(_stateType, _target, _actor)) return;
-        states.Add(new ActorState { stateType = _stateType, target = _target, actor = _actor});
-        Debug.Log($"State Added Successfully ! Actor {_actor} performing State {_stateType} to Target {_target}");
+        if (ContainsState(_statusType, _target, _other) == true)
+            return;
+        
+        states.Add(new State { targetEntity = _target, statusType = _statusType, otherEntity = _other});
+        Debug.Log($"State added successfully! {_target} has status {_statusType} towards {_other}");
     }
 
-    public void RemoveState(StateType _stateType, Entity _target)
+    public void RemoveState(StatusType _statusType, Entity _target, Entity _other = null)
     {
-        if (!ContainsState(_stateType, _target)) return;
+        if (ContainsState(_statusType, _target, _other) == false)
+            return;
         
-        var state = GetState(_stateType, _target);
+        State state = GetState(_statusType, _target, _other);
         states.Remove(state);
-        Debug.Log($"State Removed ! State {_stateType} with Target {_target}");
-    }
-    public void RemoveState(StateType _stateType, Entity _target, Entity _actor)
-    {
-        if (!ContainsState(_stateType, _target, _actor)) return;
-        
-        var state = GetState(_stateType, _target, _actor);
-        states.Remove(state);
-        Debug.Log($"State Removed ! Actor {_actor} performing State {_stateType} to Target {_target}");
+        Debug.Log($"State removed! {_target} has status {_statusType} towards {_other}");
     }
 }

@@ -28,8 +28,8 @@ public static class Planner
     private static Entity FindValidTarget(EntityType _entityType, Agent _agent)
     {
         // Find all entities of this type
-        // In this specific case -> Find all entities of a certain type that exist and that are not equipped
-        var potentialTargets = World.instance.FindEntities(_entityType, (StateType.Exists, true), (StateType.Equipped, false));
+        // In this specific case -> Find all entities of a certain type that exist and that are in physical space
+        var potentialTargets = World.instance.FindEntities(_entityType, (StatusType.Exists, true), (StatusType.InPhysicalSpace, true));
         Entity target;
         if (potentialTargets.Length > 0)
         {
@@ -58,10 +58,10 @@ public static class Planner
         return target;
     }
 
-    private static Action[] FindPlan(List<ActionScriptable> _availableActions, StateTemplate _requiredState, Agent _agent, out bool _status)
+    private static Action[] FindPlan(List<ActionDefinition> _availableActions, StateDefinition _requiredState, Agent _agent, out bool _status)
     {
         // Check if there is a valid target for the required state
-        var target = FindValidTarget(_requiredState.entityType, _agent);
+        var target = FindValidTarget(_requiredState.firstEntity.entityType, _agent);
 
         // If there is not, then the goal cannot be achieved, the plan is returned empty
         if (target == null) {
@@ -71,21 +71,21 @@ public static class Planner
         }
 
         // Start the Search, with the right target
-        Debug.Log($"Starting Search for State {_requiredState.stateType} with Target {target}");
+        Debug.Log($"Starting Search for State {_requiredState.statusType} with Target {target}");
         SearchPlan(_availableActions, _requiredState, out var plan, target, _agent, out _status);
         return plan;
     }
 
-    private static Action[] FindPlan(List<ActionScriptable> _availableActions, StateTemplate _requiredState, Entity _target, Agent _agent, out bool _status)
+    private static Action[] FindPlan(List<ActionDefinition> _availableActions, StateDefinition _requiredState, Entity _target, Agent _agent, out bool _status)
     {
         // Start the Search, with the right target
-        Debug.Log($"Starting Search for State {_requiredState.stateType} with Target {_target}");
+        Debug.Log($"Starting Search for State {_requiredState.statusType} with Target {_target}");
         SearchPlan(_availableActions, _requiredState, out var plan, _target, _agent, out _status);
         return plan;
     }
 
     // Tries to find the best plan possible, with the given actions, based on the required state, and the given target
-    private static void SearchPlan(List<ActionScriptable> _availableActions, StateTemplate _requiredState, 
+    private static void SearchPlan(List<ActionDefinition> _availableActions, StateDefinition _requiredState, 
         out Action[] _plan, in Entity _target, in Agent _agent, out bool _status)
     {
         // Set the status to true. Will become false if the plan fails
@@ -94,16 +94,17 @@ public static class Planner
         // Check if the state required is already satisfied, if so then the required state does not need any action plan
         // The state is already achieved, the plan is returned empty
         // In case the state required is considered satisfied for any entity that satisfies it
-        if (_requiredState.anyEntity) {
-            if (World.instance.ContainsState(_requiredState.stateType, _target.entityType)) {
-                Debug.Log($"State {_requiredState.stateType} with Target Type {_target.entityType} is already satisfied");
+        // TODO Remake this to use the ids correctly
+        if (_requiredState.firstEntity.entityId == _target.name) {
+            if (World.instance.ContainsState(_requiredState.statusType, _target.entityType)) {
+                Debug.Log($"State {_requiredState.statusType} with Target Type {_target.entityType} is already satisfied");
                 _plan = null; return;
             }
         }
         // In case the state required is considered satisfied if the target entity satisfies it
         else {
-            if (World.instance.ContainsState(_requiredState.stateType, _target)) {
-                Debug.Log($"State {_requiredState.stateType} with Target {_target} is already satisfied");
+            if (World.instance.ContainsState(_requiredState.statusType, _target)) {
+                Debug.Log($"State {_requiredState.statusType} with Target {_target} is already satisfied");
                 _plan = null; return;
             }
         }
@@ -124,7 +125,8 @@ public static class Planner
                 Action[] additionalPlan;
 
                 // Recursion process to find a plan that satisfies the new required state
-                if (requiredActionStates[i].targetType == Target.New)
+                // TODO Remake this check using the entity ids
+                if (true /*requiredActionStates[i].targetType == Target.New*/)
                     additionalPlan = FindPlan(_availableActions, requiredActionStates[i], _agent, out _status);
                 else
                     additionalPlan = FindPlan(_availableActions, requiredActionStates[i], _target, _agent, out _status);
@@ -161,15 +163,15 @@ public static class Planner
         return action;
     }
 
-    private static Action[] SearchForActions(List<ActionScriptable> _actionsToSearch, StateTemplate _requiredState, in Entity _target)
+    private static Action[] SearchForActions(List<ActionDefinition> _actionsToSearch, StateDefinition _requiredState, in Entity _target)
     {
         var actionsFound = new List<Action>();
 
         foreach (var actionTemplate in _actionsToSearch)
         {
             for (var i = 0; i < actionTemplate.satisfiedStates.Length; i++) {
-                if ((actionTemplate.satisfiedStates[i].stateType == _requiredState.stateType) && 
-                    (actionTemplate.satisfiedStates[i].entityType.Has(_requiredState.entityType)))
+                if ((actionTemplate.satisfiedStates[i].statusType == _requiredState.statusType) && 
+                    (actionTemplate.satisfiedStates[i].firstEntity.entityType.Has(_requiredState.firstEntity.entityType)))
                 {
                     Debug.Log($"New potential Action {actionTemplate.name} with Target {_target}");
                     var action = new Action { actionData = actionTemplate, target = _target };

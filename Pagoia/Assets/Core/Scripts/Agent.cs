@@ -2,54 +2,54 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Agent : MonoBehaviour
+public class Agent : Entity
 {
-    public Entity entity;
-
     public List<Goal> goals = new List<Goal>();
-    private List<Goal> currentGoals = new List<Goal>();
-    private int priority; public int Priority { get => priority; set => priority = Mathf.Clamp(value, 0, currentGoals.Count); }
-    private Goal current;
+    
+    private int priority; public int Priority { get => priority; set => priority = Mathf.Clamp(value, 0, orderedGoals.Count); }
+    
+    private List<Goal> orderedGoals = new List<Goal>();
+    private Goal currentGoal;
 
     public List<ActionBehavior> availableActionBehaviors = new List<ActionBehavior>();
 
     private Action[] currentActionPlan;
     private int currentActionIndex;
 
-    public bool active { get; set; }
+    public bool Active { get; set; }
 
     private void Start()
     {
-        foreach (var goal in goals) {
-            currentGoals.Add(goal);
-        }
-        currentGoals.OrderBy(_goal => _goal.priority);
+        orderedGoals = new List<Goal>(goals);
+        orderedGoals.OrderBy(goal => goal.priority);
 
         Priority = 0;
-        current = currentGoals[Priority];
+        currentGoal = orderedGoals[Priority];
+        
         StartPlan();
     }
 
     public void StartPlan()
     {
-        currentActionPlan = Planner.CreatePlan(current, this, out bool success);
+        currentActionPlan = Planner.CreatePlan(currentGoal, this, out bool success);
 
-        if (!success)
+        if (success == false)
         {
-            Debug.LogWarning($"Plan failed with goal {current} and Agent {this}");
+            Debug.LogWarning($"Plan failed with goal {currentGoal} and Agent {this}");
             Priority++;
-            if (Priority >= currentGoals.Count)
+            
+            if (Priority >= orderedGoals.Count)
             {
                 Debug.LogWarning($"No more goals, Agent {this} dismissed");
-
                 return; 
             }
-            current = currentGoals[Priority];
+            currentGoal = orderedGoals[Priority];
+            
             StartPlan();
         }
         else
         {
-            active = true;
+            Active = true;
             foreach (var action in currentActionPlan)
             {
                 Debug.LogWarning($"Action {action.actionData.name} with Target {action.target}");
@@ -60,6 +60,7 @@ public class Agent : MonoBehaviour
             }
 
             currentActionIndex = 0;
+            
             StartActionBehavior(currentActionIndex);
         }
     }
@@ -69,6 +70,7 @@ public class Agent : MonoBehaviour
         var actionBehavior = currentActionPlan[_index].actionBehavior;
         actionBehavior.action = currentActionPlan[_index];
         actionBehavior.Active = true;
+        
         actionBehavior.StartAction();
     }
     public void NextAction()
@@ -83,7 +85,8 @@ public class Agent : MonoBehaviour
             Debug.Log("Hurray ! Goal is complete !");
 
             Priority = 0; // Do it again
-            current = currentGoals[Priority];
+            currentGoal = orderedGoals[Priority];
+            
             StartPlan();
         }
     }

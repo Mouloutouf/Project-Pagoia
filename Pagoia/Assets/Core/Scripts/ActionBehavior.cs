@@ -4,7 +4,7 @@ public abstract class ActionBehavior : MonoBehaviour
 {
     public Agent agent;
 
-    public ActionScriptable actionData;
+    public ActionDefinition actionData;
     public Action action { get; set; }
 
     public Entity Target => action.target;
@@ -24,11 +24,11 @@ public abstract class ActionBehavior : MonoBehaviour
         {
             StopAction();
 
-            foreach (var st in action.satisfiedStates)
+            foreach (var stateDefinition in action.satisfiedStates)
             {
-                if (st.entityType.Has(Target.entityType))
+                if (stateDefinition.firstEntity.entityType.Has(Target.entityType))
                 {
-                    World.instance.AddState(st.stateType, Target, agent.entity);
+                    World.instance.AddState(stateDefinition.statusType, Target, agent);
                 }
             }
 

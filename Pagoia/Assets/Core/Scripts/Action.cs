@@ -1,27 +1,28 @@
 ﻿public class Action
 {
-    public ActionScriptable actionData;
+    public ActionDefinition actionData;
     public ActionBehavior actionBehavior;
 
     public Entity target;
 
     public int Cost => CalculateActionCost();
 
-    public StateTemplate[] requiredStates => actionData.requiredStates;
-    public StateTemplate[] satisfiedStates => actionData.satisfiedStates;
+    public StateDefinition[] requiredStates => actionData.requiredStates;
+    public StateDefinition[] satisfiedStates => actionData.satisfiedStates;
 
     private int CalculateActionCost()
     {
         var cost = 0;
 
-        foreach (var st in requiredStates)
+        foreach (var stateDefinition in requiredStates)
         {
-            if (st.targetType == Target.New) {
-                if (World.instance.ContainsState(st.stateType, st.entityType) == false) cost++;
-            }
-            else if (st.targetType == Target.Same) {
-                if (World.instance.ContainsState(st.stateType, target) == false) cost++;
-            }
+            // TODO Remake this whole method completely
+            // if (stateDefinition.targetType == Target.New) {
+            //     if (World.instance.ContainsState(stateDefinition.statusType, stateDefinition.entityType) == false) cost++;
+            // }
+            // else if (stateDefinition.targetType == Target.Same) {
+            //     if (World.instance.ContainsState(stateDefinition.statusType, target) == false) cost++;
+            // }
         }
 
         cost += actionData.baseCost;

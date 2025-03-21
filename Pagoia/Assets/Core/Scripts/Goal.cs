@@ -8,5 +8,5 @@ public class Goal : ScriptableObject
     public GoalType goalType;
     public int priority;
 
-    public StateTemplate requiredState;
+    public StateDefinition requiredState;
 }

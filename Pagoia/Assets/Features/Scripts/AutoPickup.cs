@@ -11,24 +11,21 @@ public class AutoPickup : MonoBehaviour
 
     private void Update()
     {
-        var elements = Physics.OverlapSphere(this.transform.position, pickupRadius, autoPickupMask);
+        var elements = Physics.OverlapSphere(transform.position, pickupRadius, autoPickupMask);
 
-        for (var i = 0; i < elements.Length; i++)
+        foreach (var element in elements)
         {
-            var element = elements[i].GetComponentInParent<Entity>();
+            Pickable pickable = element.GetComponentInParent<Pickable>();
+            
+            pickable.model.SetActive(false);
+            World.instance.AddState(StatusType.Inside, pickable, agent);
 
-            if (element.entityType == EntityType.OreCrystal)
-            {
-                inventory.crystals.Add(element);
-                element.model.SetActive(false);
-                World.instance.AddState(StateType.Equipped, element, agent.entity);
-            }
-            else if (element.entityType == EntityType.Pickaxe)
-            {
-                inventory.pickaxe = element;
-                element.model.SetActive(false);
-                World.instance.AddState(StateType.Equipped, element, agent.entity);
-            }
+            // TODO Remove the state in physical space for element
+            
+            if (pickable is Resource resource)
+                inventory.crystals.Add(resource);
+            else if (pickable is Item item)
+                inventory.pickaxe = item;
         }
     }
 

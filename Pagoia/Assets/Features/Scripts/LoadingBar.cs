@@ -15,11 +15,9 @@ public class LoadingBar
 
     public IEnumerator Load()
     {
-        float fill = 0.0f;
-        for (var ft = 0f; ft < 1f; ft += Time.deltaTime * speed)
+        for (var fill = 0f; fill < 1f; fill += Time.deltaTime * speed)
         {
             yield return new WaitForEndOfFrame();
-            fill = ft;
             slider.value = fill;
         }
         _afterLoadAction_.Invoke();

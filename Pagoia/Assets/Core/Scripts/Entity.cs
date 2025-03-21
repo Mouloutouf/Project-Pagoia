@@ -1,23 +1,27 @@
 using UnityEngine;
 
-// TODO Remove the flags on the Entity Type as it can and probably will become a very large enum which will not be able to handle flags
-// TODO For now, just use the enum to represent every single possible entity in the world, from the most abstract to the least
-// We might change this later to use Type directly but I do not know how to implement it and make it accessible through Unity inspector at the moment
+// We might change this later to use Type directly, but I do not know how to implement it and make it accessible through Unity inspector at the moment
 // Ideally, we should make use of Type and create a custom tool attribute in order to display types as a dropdown selection list in the inspector
+
+// TODO Make a dictionary to associate each Entity Type with their C# Type so we can use this information when searching instead of the Entity Type
+// Especially useful for generic states that can be satisfied for any kind of entities, and where we need to know that our specific entity type is indeed valid for that state
+// which uses another entity type that is above in the inheritance hierarchy
+// Essentially the Entity Type is only here to allow the user to input that information easily in the inspector but it should not be used !!!
 
 public enum EntityType
 {
-    Dwarf = 1 << 0,
-    Monster = 1 << 1,
-    OreBlock = 1 << 2,
-    OreCrystal = 1 << 3,
-    Pickaxe = 1 << 4,
-    CraftingTable = 1 << 5
+    None,
+    Entity,
+    Pickable,
+    Item,
+    Resource,
+    Collector,
+    Block,
+    Agent,
+    Pickaxe,
+    Crystal,
+    OreBlock
 }
-
-// TODO Make an inheritance hierarchy for entities instead of having it be separate
-// It makes more sense to do so, as we need an abstraction hierarchy for the whole states and entities system,
-// and there really is no reason not to have inheritance here
 
 public class Entity : MonoBehaviour
 {
@@ -25,15 +29,13 @@ public class Entity : MonoBehaviour
 
     public GameObject model;
 
-    public void AddEntityAsTarget(StateType _type)
+    protected virtual void Start()
     {
-        World.instance.AddState(_type, this);
-    }
-    public void RemoveEntityAsTarget(StateType _type)
-    {
-        World.instance.RemoveState(_type, this);
+        World.instance.AddState(StatusType.Exists, this);
     }
 
-    private void Start() => AddEntityAsTarget(StateType.Exists);
-    private void OnDisable() => RemoveEntityAsTarget(StateType.Exists);
+    protected virtual void OnDisable()
+    {
+        World.instance.RemoveState(StatusType.Exists, this);
+    }
 }
