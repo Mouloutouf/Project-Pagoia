@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class Agent : Entity
 {
-    public List<Goal> goals = new List<Goal>();
+    public List<GoalDefinition> goals = new List<GoalDefinition>();
     
     private int priority; public int Priority { get => priority; set => priority = Mathf.Clamp(value, 0, orderedGoals.Count); }
     
-    private List<Goal> orderedGoals = new List<Goal>();
-    private Goal currentGoal;
+    private List<GoalDefinition> orderedGoals = new List<GoalDefinition>();
+    private GoalDefinition currentGoalDefinition;
 
     public List<ActionBehavior> availableActionBehaviors = new List<ActionBehavior>();
 
@@ -20,22 +20,22 @@ public class Agent : Entity
 
     private void Start()
     {
-        orderedGoals = new List<Goal>(goals);
+        orderedGoals = new List<GoalDefinition>(goals);
         orderedGoals.OrderBy(goal => goal.priority);
 
         Priority = 0;
-        currentGoal = orderedGoals[Priority];
+        currentGoalDefinition = orderedGoals[Priority];
         
         StartPlan();
     }
 
     public void StartPlan()
     {
-        currentActionPlan = Planner.CreatePlan(currentGoal, this, out bool success);
+        currentActionPlan = Planner.CreatePlan(currentGoalDefinition, this, out bool success);
 
         if (success == false)
         {
-            Debug.LogWarning($"Plan failed with goal {currentGoal} and Agent {this}");
+            Debug.LogWarning($"Plan failed with goal {currentGoalDefinition} and Agent {this}");
             Priority++;
             
             if (Priority >= orderedGoals.Count)
@@ -43,7 +43,7 @@ public class Agent : Entity
                 Debug.LogWarning($"No more goals, Agent {this} dismissed");
                 return; 
             }
-            currentGoal = orderedGoals[Priority];
+            currentGoalDefinition = orderedGoals[Priority];
             
             StartPlan();
         }
@@ -85,7 +85,7 @@ public class Agent : Entity
             Debug.Log("Hurray ! Goal is complete !");
 
             Priority = 0; // Do it again
-            currentGoal = orderedGoals[Priority];
+            currentGoalDefinition = orderedGoals[Priority];
             
             StartPlan();
         }

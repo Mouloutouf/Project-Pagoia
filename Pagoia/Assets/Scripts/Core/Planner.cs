@@ -5,10 +5,10 @@ using UnityEngine;
 
 public static class Planner
 {
-    public static Action[] CreatePlan(Goal _goal, Agent _agent, out bool _status)
+    public static Action[] CreatePlan(GoalDefinition goalDefinition, Agent _agent, out bool _status)
     {
         Action[] plan;
-        Debug.LogWarning($"Starting Plan for Goal {_goal.name} with Agent {_agent}");
+        Debug.LogWarning($"Starting Plan for Goal {goalDefinition.name} with Agent {_agent}");
 
         // Finding all the agent's available actions
         var availableActionsQuery =
@@ -16,7 +16,7 @@ public static class Planner
         var availableActions = availableActionsQuery.ToList();
 
         // Start the Planner
-        plan = FindPlan(availableActions, _goal.requiredState, _agent, out _status);
+        plan = FindPlan(availableActions, goalDefinition.requiredState, _agent, out _status);
 
         // If the plan is empty, it means it has failed at some point in the process
         // Set the status to tell if it has succeeded or not

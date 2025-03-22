@@ -2,5 +2,5 @@
 
 public interface IMoveBehavior
 {
-    void MoveTo(Vector3 _dest);
+    void MoveTo(Vector3 _destination);
 }

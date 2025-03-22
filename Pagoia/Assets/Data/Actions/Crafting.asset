@@ -12,15 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72e4f51353fa4554395b9c75342ca437, type: 3}
   m_Name: Crafting
   m_EditorClassIdentifier: 
-  target: 32
-  baseCost: 1
-  requiredStates:
-  - stateType: 5
-    entityType: 32
-    anyEntity: 1
-    targetType: 0
+  actorName: 
+  requiredStates: []
   satisfiedStates:
-  - stateType: 7
-    entityType: 16
-    anyEntity: 0
-    targetType: 0
+  - firstEntity:
+      entityId: 
+      entityType: 0
+      minQuantity: 1
+      maxQuantity: 0
+    statusType: 7
+    secondEntity:
+      entityId: 
+      entityType: 0
+      minQuantity: 1
+      maxQuantity: 0
+  clearedStates: []
+  baseCost: 1

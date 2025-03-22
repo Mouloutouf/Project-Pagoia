@@ -55,9 +55,8 @@ public class Block : Entity
         Destroyed = true;
         gameObject.SetActive(false);
         
-        // TODO Add state destroyed by
-        // TODO Remove state exists
-        
+        // TODO Add state 'destroyed by'
+        // TODO Remove state 'exists'
         // TODO Actually destroy the block instead of deactivating it
     }
 

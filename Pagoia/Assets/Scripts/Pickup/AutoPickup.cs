@@ -11,27 +11,24 @@ public class AutoPickup : MonoBehaviour
 
     private void Update()
     {
-        var elements = Physics.OverlapSphere(transform.position, pickupRadius, autoPickupMask);
+        Collider[] elements = Physics.OverlapSphere(transform.position, pickupRadius, autoPickupMask);
 
-        foreach (var element in elements)
+        foreach (Collider element in elements)
         {
             Pickable pickable = element.GetComponentInParent<Pickable>();
             
             pickable.model.SetActive(false);
             World.instance.AddState(StatusType.Inside, pickable, agent);
 
-            // TODO Remove the state in physical space for element
+            // TODO Remove state 'in physical space'
             
-            if (pickable is Resource resource)
-                inventory.crystals.Add(resource);
-            else if (pickable is Item item)
-                inventory.pickaxe = item;
+            inventory.AddElement(pickable);
         }
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(this.transform.position, pickupRadius);
+        Gizmos.DrawWireSphere(transform.position, pickupRadius);
     }
 }
