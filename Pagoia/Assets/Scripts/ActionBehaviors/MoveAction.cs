@@ -2,7 +2,7 @@
 
 public class MoveAction : ActionBehavior
 {
-    public AgentMovement movement; public IMoveBehavior Movement => (IMoveBehavior)movement;
+    public AgentMovement movement;
 
     public float distance;
 
@@ -10,22 +10,22 @@ public class MoveAction : ActionBehavior
 
     protected override bool Check()
     {
-        var dist = Vector3.Distance(this.transform.position, Destination);
+        var dist = Vector3.Distance(transform.position, Destination);
         return dist < distance;
     }
 
     public override void StartAction()
     {
-        Movement.MoveTo(Destination);
+        movement.MoveTo(Destination);
     }
     public override void StopAction()
     {
-        Movement.MoveTo(this.transform.position);
+        movement.MoveTo(transform.position);
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(this.transform.position, distance);
+        Gizmos.DrawWireSphere(transform.position, distance);
     }
 }

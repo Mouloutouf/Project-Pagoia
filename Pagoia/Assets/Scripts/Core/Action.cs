@@ -1,20 +1,22 @@
 ﻿public class Action
 {
-    public ActionDefinition actionData;
+    public ActionDefinition actionDefinition;
+    public ActionContext actionContext;
+    
     public ActionBehavior actionBehavior;
 
     public Entity target;
 
     public int Cost => CalculateActionCost();
 
-    public StateDefinition[] requiredStates => actionData.requiredStates;
-    public StateDefinition[] satisfiedStates => actionData.satisfiedStates;
+    public StateDefinition[] requiredStates => actionContext.requiredStates;
+    public StateDefinition[] satisfiedStates => actionContext.satisfiedStates;
 
     private int CalculateActionCost()
     {
-        var cost = 0;
+        int cost = 0;
 
-        foreach (var stateDefinition in requiredStates)
+        foreach (StateDefinition stateDefinition in requiredStates)
         {
             // TODO Remake this whole method completely
             // if (stateDefinition.targetType == Target.New) {
@@ -25,7 +27,7 @@
             // }
         }
 
-        cost += actionData.baseCost;
+        cost += actionDefinition.baseCost;
         return cost;
     }
 }

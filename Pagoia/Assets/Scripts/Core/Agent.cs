@@ -31,9 +31,9 @@ public class Agent : Entity
 
     public void StartPlan()
     {
-        currentActionPlan = Planner.CreatePlan(currentGoalDefinition, this, out bool success);
+        currentActionPlan = Planner.CreatePlan(currentGoalDefinition, this);
 
-        if (success == false)
+        if (currentActionPlan == null)
         {
             Debug.LogWarning($"Plan failed with goal {currentGoalDefinition} and Agent {this}");
             Priority++;
@@ -41,7 +41,7 @@ public class Agent : Entity
             if (Priority >= orderedGoals.Count)
             {
                 Debug.LogWarning($"No more goals, Agent {this} dismissed");
-                return; 
+                return;
             }
             currentGoalDefinition = orderedGoals[Priority];
             
@@ -50,13 +50,13 @@ public class Agent : Entity
         else
         {
             Active = true;
-            foreach (var action in currentActionPlan)
+            foreach (Action action in currentActionPlan)
             {
-                Debug.LogWarning($"Action {action.actionData.name} with Target {action.target}");
+                Debug.LogWarning($"Action {action.actionDefinition.name} with Target {action.target}");
 
-                var actionBehaviorQuery =
-                    from actionBehavior in availableActionBehaviors where (actionBehavior.actionData == action.actionData) select actionBehavior;
-                action.actionBehavior = actionBehaviorQuery.Single();
+                action.actionBehavior = (from actionBehavior in availableActionBehaviors
+                    where actionBehavior.actionDefinition == action.actionDefinition
+                    select actionBehavior).Single();
             }
 
             currentActionIndex = 0;
@@ -67,7 +67,7 @@ public class Agent : Entity
 
     public void StartActionBehavior(int _index)
     {
-        var actionBehavior = currentActionPlan[_index].actionBehavior;
+        ActionBehavior actionBehavior = currentActionPlan[_index].actionBehavior;
         actionBehavior.action = currentActionPlan[_index];
         actionBehavior.Active = true;
         
