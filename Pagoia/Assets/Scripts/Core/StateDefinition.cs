@@ -4,6 +4,8 @@
 [Serializable]
 public class StateDefinition
 {
+    public int priority;
+    
     public EntityDefinition firstEntity;
 
     public StatusType statusType;

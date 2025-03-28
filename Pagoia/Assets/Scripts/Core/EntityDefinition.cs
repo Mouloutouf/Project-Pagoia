@@ -12,7 +12,9 @@ public class EntityDefinition
     public int MinQuantity { get; private set; } = 1;
     public int MaxQuantity  { get; private set; } = 0;
 
-    // TODO This absolutely needs to work so check how you should compare both the type and the id to make sure two separate definitions are actually equal
+    // TODO Goal 2 / Implement the Entity Comparison System
+    // TODO First, compare the entity types, using the actual polymorphic types to do the comparison, as such you should make sure we can get the type of an entity from its entity type
+    // TODO Second, compare the min and max quantities to make sure they are compatible
     public override bool Equals(object obj)
     {
         return obj is EntityDefinition other &&
