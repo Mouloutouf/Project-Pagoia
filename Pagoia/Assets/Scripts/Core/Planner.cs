@@ -47,17 +47,11 @@ public static class Planner
         return null;
     }
 
-    // TODO Goal 1 / Implement the Breadth First Search Score Priority System
-    // TODO Make sure that if we find a successful path (a path that ends that is), and that path has a better cost than the other paths still not fully explored, then we stop the search
-    // TODO Implement a max depth for the agent that can be modified for performances, which will stop the search if and only if it has at least one successful path that is not the best in cost
-    // We might as well do a cost to depth ratio where we have an exit cost which decreases as the depth increases, in order to always eventually exit with a plan even if the paths are all long
-    // TODO Implement an absolute depth at which the search system will stop, and if no complete path is found by then, will return a failed plan
-    // Tries to find the best plan possible, with the given actions, based on the required state, and the given target
     private static Action[] FindPlan(out bool _status, List<ActionDefinition> _availableActions, StateDefinition _requiredState, Agent _agent, Entity _target = null)
     {
+        // TODO Remove this system entirely
         #region Find Target(s) for Action
 
-        // TODO Goal 4 / Implement the Find Targets System
         if (_target == null)
         {
             _target = FindValidTarget(_requiredState.firstEntity, _agent);
@@ -72,13 +66,10 @@ public static class Planner
 
         #endregion
 
+        // TODO Remake this system entirely
         #region Check For Satisfied State
 
-        // TODO Goal 3 / Implement the Satisfied State Check System
-        // Check if the state required is already satisfied, if so then the required state does not need any action plan
-        // The state is already achieved, the plan is returned empty
         // In case the state required is considered satisfied for any entity that satisfies it
-        // TODO Remake this to use the ids correctly
         if (_requiredState.firstEntity.entityId == _target.name)
         {
             if (World.instance.ContainsState(_requiredState.statusType, _target.entityType))
