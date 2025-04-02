@@ -47,6 +47,87 @@ public static class Planner
         return null;
     }
 
+    public static void Plan(List<ActionDefinition> _availableActions, StateDefinition _requiredState)
+    {
+        Queue<(int, ActionContext)> actionQueue = new Queue<(int, ActionContext)>();
+        List<List<StateDefinition>> validatedStatesOfPaths = new List<List<StateDefinition>>();
+        List<List<ActionContext>> actionPaths = new List<List<ActionContext>>();
+        
+        List<ActionContext> potentialActions = GetValidActionsForRequiredState(_availableActions, _requiredState);
+        
+        for (int i = 0; i < potentialActions.Count; i++)
+        {
+            actionPaths.Add(new List<ActionContext>());
+            validatedStatesOfPaths.Add(new List<StateDefinition>());
+            
+            int newPath = actionPaths.Count;
+            actionQueue.Enqueue((newPath, potentialActions[i]));
+        }
+        
+        // Go through the actions in a breadth first search order
+        while (actionQueue.Count > 0)
+        {
+            // For a given action within a specific path
+            var(currentPath, currentAction) = actionQueue.Peek();
+
+            // Go through all required states for the current action
+            foreach (StateDefinition state in currentAction.requiredStates.ToList())
+            {
+                // Check if the state is already satisfied, if it is, move on to the next state
+                bool isSatisfied = CheckIfStateIsSatisfied(currentPath, state);
+
+                if (isSatisfied == true)
+                    continue;
+                
+                // Search for all potential actions that can satisfy the state we want
+                List<ActionContext> actionsForRequiredState = GetValidActionsForRequiredState(_availableActions, state);
+                
+                // Go through all these actions
+                for (int i = 0; i < actionsForRequiredState.Count; i++)
+                {
+                    ActionContext action = actionsForRequiredState[i];
+                    int path;
+                    
+                    // If we have just one action then the path does not change
+                    if (i == 0)
+                    {
+                        path = currentPath;
+                    }
+                    // If we have more then subsequent actions will generate a new path each
+                    else
+                    {
+                        // Copy everything from the current path to the new path
+                        actionPaths.Add(new List<ActionContext>(actionPaths[currentPath]));
+                        validatedStatesOfPaths.Add(new List<StateDefinition>(validatedStatesOfPaths[currentPath]));
+
+                        // New path index is equal to the new size
+                        path = actionPaths.Count;
+                    }
+                    
+                    // Add the action to the queue
+                    actionQueue.Enqueue((path, action));
+                    
+                    // Add the action to the list of actions for its path
+                    actionPaths[path].Add(action);
+                    
+                    // Add all the satisfied states this action accomplishes to the validated states of its path
+                    foreach (StateDefinition satisfiedState in action.satisfiedStates)
+                    {
+                        validatedStatesOfPaths[path].Add(satisfiedState);
+                    }
+                }
+            }
+            
+            // Remove the current action from the queue
+            actionQueue.Dequeue();
+        }
+    }
+
+    private static bool CheckIfStateIsSatisfied(int path, StateDefinition state)
+    {
+        return state.priority > 1 && path > 2;
+    }
+    
     private static Action[] FindPlan(out bool _status, List<ActionDefinition> _availableActions, StateDefinition _requiredState, Agent _agent, Entity _target = null)
     {
         // TODO Remove this system entirely
