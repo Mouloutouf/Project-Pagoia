@@ -4,7 +4,10 @@
 [Serializable]
 public class StateDefinition
 {
-    public int priority;
+    /// <summary>
+    /// Smaller values equal higher priority
+    /// </summary>
+    public int priority = 1;
     
     public EntityDefinition firstEntity;
 

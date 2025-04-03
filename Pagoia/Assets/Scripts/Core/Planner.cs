@@ -70,8 +70,10 @@ public static class Planner
             // For a given action within a specific path
             var(currentPath, currentAction) = actionQueue.Peek();
 
-            // Go through all required states for the current action
-            foreach (StateDefinition state in currentAction.requiredStates.ToList())
+            // Go through all required states for the current action in descending order of priority, since higher priority actions will be performed first, we check them last
+            List<StateDefinition> requiredStates = currentAction.requiredStates.OrderByDescending(_state => _state.priority).ToList();
+            
+            foreach (StateDefinition state in requiredStates)
             {
                 // Check if the state is already satisfied, if it is, move on to the next state
                 bool isSatisfied = CheckIfStateIsSatisfied(currentPath, state);
